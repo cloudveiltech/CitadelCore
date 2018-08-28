@@ -97,6 +97,12 @@ namespace CitadelCore.Extensions
                         {
                             ms.Position = 0;
                             message.ContentType = messageInfo.BodyContentType;
+
+                            if(message.Headers.ContainsKey("Expires"))
+                            {
+                                message.Headers.Remove("Expires");
+                            }
+
                             message.Headers["Expires"] = new Microsoft.Extensions.Primitives.StringValues(TimeUtil.UnixEpochString);
 
                             await ms.CopyToAsync(message.Body, 4096, cancelToken);
