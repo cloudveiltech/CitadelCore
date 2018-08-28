@@ -15,8 +15,8 @@ function Get-XmlNode([ xml ]$XmlDocument, [string]$NodePath, [string]$NamespaceU
 
 $currentLocation = Get-Location
 
-$projectFilePath = $args[0]
-$projectId = $args[1]
+$projectFilePath = "CitadelCore\CitadelCore.csproj"
+$projectId = "CitadelCore"
 
 [xml] $projectFile = Get-Content $projectFilePath
 

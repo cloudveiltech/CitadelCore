@@ -41,7 +41,13 @@ namespace CitadelCore.Net.Handlers
         /// <param name="streamInspectionCallback">
         /// Callback used when streamed content inspection is requested on a new message.
         /// </param>
-        public FilterWebsocketHandler(NewHttpMessageHandler newMessageCallback, HttpMessageWholeBodyInspectionHandler wholeBodyInspectionCallback, HttpMessageStreamedInspectionHandler streamInspectionCallback) : base(newMessageCallback, wholeBodyInspectionCallback, streamInspectionCallback)
+        /// <param name="badCertificateCallback">
+        /// Callback used when bad certificates are encountered.
+        /// </param>
+        public FilterWebsocketHandler(NewHttpMessageHandler newMessageCallback,
+            HttpMessageWholeBodyInspectionHandler wholeBodyInspectionCallback,
+            HttpMessageStreamedInspectionHandler streamInspectionCallback,
+            BadCertificateHandler badCertificateCallback) : base(newMessageCallback, wholeBodyInspectionCallback, streamInspectionCallback, badCertificateCallback)
         {
 
         }

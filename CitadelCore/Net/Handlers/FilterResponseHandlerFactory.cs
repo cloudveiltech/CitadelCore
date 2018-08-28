@@ -50,6 +50,12 @@ namespace CitadelCore.Net.Handlers
             set;
         }
 
+        public BadCertificateHandler BadCertificateCallback
+        {
+            get;
+            set;
+        }
+
         /// <summary>
         /// Constructs and returns the appropriate handler for the supplied HTTP context.
         /// </summary>
@@ -80,7 +86,7 @@ namespace CitadelCore.Net.Handlers
         /// </returns>
         private AbstractFilterResponseHandler HandleWebsocket(HttpContext context)
         {
-            return new FilterWebsocketHandler(NewMessageCallback, WholeBodyInspectionCallback, StreamedInspectionCallback);
+            return new FilterWebsocketHandler(NewMessageCallback, WholeBodyInspectionCallback, StreamedInspectionCallback, BadCertificateCallback);
         }
 
         /// <summary>
@@ -94,7 +100,7 @@ namespace CitadelCore.Net.Handlers
         /// </returns>
         private AbstractFilterResponseHandler HandleHttp(HttpContext context)
         {
-            return new FilterHttpResponseHandler(NewMessageCallback, WholeBodyInspectionCallback, StreamedInspectionCallback);
+            return new FilterHttpResponseHandler(NewMessageCallback, WholeBodyInspectionCallback, StreamedInspectionCallback, BadCertificateCallback);
         }
 
         /// <summary>
@@ -108,7 +114,7 @@ namespace CitadelCore.Net.Handlers
         /// </returns>
         private AbstractFilterResponseHandler HandleUnknownProtocol(HttpContext context)
         {
-            return new FilterPassthroughResponseHandler(NewMessageCallback, WholeBodyInspectionCallback, StreamedInspectionCallback);
+            return new FilterPassthroughResponseHandler(NewMessageCallback, WholeBodyInspectionCallback, StreamedInspectionCallback, BadCertificateCallback);
         }
     }
 }

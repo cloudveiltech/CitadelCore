@@ -32,6 +32,11 @@ namespace CitadelCore.Net.Handlers
         protected HttpMessageStreamedInspectionHandler _streamInpsectionCb;
 
         /// <summary>
+        /// Callback used when a bad certificate is encountered.
+        /// </summary>
+        protected BadCertificateHandler _badCertificateCb;
+
+        /// <summary>
         /// For writing empty responses without new allocations.
         /// </summary>
         protected static readonly byte[] s_nullBody = new byte[0];
@@ -48,11 +53,18 @@ namespace CitadelCore.Net.Handlers
         /// <param name="streamInspectionCallback">
         /// Callback used when streamed content inspection is requested on a new message.
         /// </param>
-        public AbstractFilterResponseHandler(NewHttpMessageHandler newMessageCallback, HttpMessageWholeBodyInspectionHandler wholeBodyInspectionCallback, HttpMessageStreamedInspectionHandler streamInspectionCallback)
+        /// <param name="badCertificateCallback">
+        /// Callback used when bad certificates are encountered.
+        /// </param>
+        public AbstractFilterResponseHandler(NewHttpMessageHandler newMessageCallback,
+            HttpMessageWholeBodyInspectionHandler wholeBodyInspectionCallback,
+            HttpMessageStreamedInspectionHandler streamInspectionCallback,
+            BadCertificateHandler badCertificateCallback)
         {
             _newMessageCb = newMessageCallback;
             _wholeBodyInspectionCb = wholeBodyInspectionCallback;
             _streamInpsectionCb = streamInspectionCallback;
+            _badCertificateCb = badCertificateCallback;
         }
 
         /// <summary>

@@ -61,6 +61,15 @@ namespace CitadelCore.Net.Proxy
         }
 
         /// <summary>
+        /// The callback for showing a bad certificate page.
+        /// </summary>
+        public BadCertificateHandler BadCertificateHandler
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Configures the proxy server to use the supplied string for the common name when issuing certificates.
         /// </summary>
         /// <param name="authorityName">

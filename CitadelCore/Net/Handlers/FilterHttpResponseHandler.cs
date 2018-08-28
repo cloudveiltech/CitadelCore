@@ -82,7 +82,13 @@ namespace CitadelCore.Net.Handlers
         /// <param name="streamInspectionCallback">
         /// Callback used when streamed content inspection is requested on a new message.
         /// </param>
-        public FilterHttpResponseHandler(NewHttpMessageHandler newMessageCallback, HttpMessageWholeBodyInspectionHandler wholeBodyInspectionCallback, HttpMessageStreamedInspectionHandler streamInspectionCallback) : base(newMessageCallback, wholeBodyInspectionCallback, streamInspectionCallback)
+        /// <param name="badCertificateCallback">
+        /// Callback used when a bad certificate is encountered.
+        /// </param>
+        public FilterHttpResponseHandler(NewHttpMessageHandler newMessageCallback,
+            HttpMessageWholeBodyInspectionHandler wholeBodyInspectionCallback,
+            HttpMessageStreamedInspectionHandler streamInspectionCallback,
+            BadCertificateHandler badCertificateCallback) : base(newMessageCallback, wholeBodyInspectionCallback, streamInspectionCallback, badCertificateCallback)
         {
 
         }
@@ -304,6 +310,35 @@ namespace CitadelCore.Net.Handlers
                 try
                 {
                     response = await s_client.SendAsync(requestMsg, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
+                }
+                catch (HttpRequestException e)
+                {
+                    LoggerProxy.Default.Error(e);
+
+                    if(e.InnerException is WebException && e.InnerException.InnerException is System.Security.Authentication.AuthenticationException)
+                    {
+                        requestMessageNfo = new HttpMessageInfo
+                        {
+                            Url = reqUrl,
+                            Method = new HttpMethod(context.Request.Method),
+                            IsEncrypted = context.Request.IsHttps,
+                            Headers = context.Request.Headers.ToNameValueCollection(),
+                            MessageProtocol = MessageProtocol.Http,
+                            MessageType = MessageType.Request,
+                            RemoteAddress = context.Connection.RemoteIpAddress,
+                            RemotePort = (ushort)context.Connection.RemotePort,
+                            LocalAddress = context.Connection.LocalIpAddress,
+                            LocalPort = (ushort)context.Connection.LocalPort,
+                            BodyInternal = null
+                        };
+
+                        _badCertificateCb?.Invoke(requestMessageNfo);
+
+                        context.Response.ClearAllHeaders();
+                        await context.Response.ApplyMessageInfo(requestMessageNfo, context.RequestAborted);
+
+                        return;
+                    }
                 }
                 catch (Exception e)
                 {

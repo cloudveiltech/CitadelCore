@@ -56,4 +56,10 @@ namespace CitadelCore.Net.Proxy
     /// The message information object.
     /// </param>
     public delegate void HttpMessageWholeBodyInspectionHandler(HttpMessageInfo messageInfo);
+
+    /// <summary>
+    /// Callback used to allow the filtering application return a page for bad SSL certificates.
+    /// </summary>
+    /// <param name="messageInfo"></param>
+    public delegate void BadCertificateHandler(HttpMessageInfo messageInfo);
 }

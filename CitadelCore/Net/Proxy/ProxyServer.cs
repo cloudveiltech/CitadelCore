@@ -126,6 +126,7 @@ namespace CitadelCore.Net.Proxy
             FilterResponseHandlerFactory.Default.NewMessageCallback = configuration.NewHttpMessageHandler ?? throw new ArgumentException("The new message callback MUST be defined.", nameof(configuration));
             FilterResponseHandlerFactory.Default.WholeBodyInspectionCallback = configuration.HttpMessageWholeBodyInspectionHandler ?? throw new ArgumentException("The whole-body content inspection callback MUST be defined.", nameof(configuration));
             FilterResponseHandlerFactory.Default.StreamedInspectionCallback = configuration.HttpMessageStreamedInspectionHandler ?? throw new ArgumentException("The streaming content inspection callback MUST be defined.", nameof(configuration));
+            FilterResponseHandlerFactory.Default.BadCertificateCallback = configuration.BadCertificateHandler ?? throw new ArgumentException("The bad certificate callback MUST be defined.", nameof(configuration));
 
             // Hook the cert verification callback.
             ServicePointManager.ServerCertificateValidationCallback += CertificateVerificationHandler;
