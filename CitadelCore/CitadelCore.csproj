@@ -1,5 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>Jesse Nicholson</Authors>
@@ -12,22 +11,21 @@
     <PackageIconUrl />
     <RepositoryUrl>https://github.com/TechnikEmpire/CitadelCore</RepositoryUrl>
     <PackageTags>proxy filtering content-filtering transparent-proxy</PackageTags>
-    <PackageReleaseNotes>Reinstates firewall request accessibility.</PackageReleaseNotes>
+    <PackageReleaseNotes>Fixes 'duplicate key' issue</PackageReleaseNotes>
     <Title>CitadelCore</Title>
     <Summary>Transparent filtering HTTP/S and Websocket/WebsocketSecure proxy.</Summary>
     <Description>Transparent filtering HTTP/S and Websocket/WebsocketSecure proxy.</Description>
-    <Version>3.0.10</Version>
-    <AssemblyVersion>3.0.10.0</AssemblyVersion>
-    <FileVersion>3.0.10.0</FileVersion>    
+    <Version>3.0.12</Version>
+    <AssemblyVersion>3.0.12.0</AssemblyVersion>
+    <FileVersion>3.0.12.0</FileVersion>
+    <PackageId>CloudVeil.CitadelCore</PackageId>
   </PropertyGroup>
-
   <ItemGroup Label="dotnet pack instructions">
     <Content Include="build\*.targets">
       <Pack>true</Pack>
       <PackagePath>build\</PackagePath>
     </Content>
   </ItemGroup>
-
   <Target Name="CollectRuntimeOutputs" BeforeTargets="_GetPackageFiles">
     <!-- Collect these items inside a target that runs after build but before packaging. -->
     <ItemGroup>
@@ -37,19 +35,16 @@
       </Content>
     </ItemGroup>
   </Target>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <DocumentationFile>bin\Debug\netstandard2.0\CitadelCore.xml</DocumentationFile>
     <DefineConstants>TRACE;DEBUG;VERBOSE_WARNINGS</DefineConstants>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <DocumentationFile>bin\Release\netstandard2.0\CitadelCore.xml</DocumentationFile>
     <DefineConstants>TRACE;RELEASE;NETSTANDARD2_0</DefineConstants>
   </PropertyGroup>
-  
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.1.1" />
@@ -60,6 +55,4 @@
     <PackageReference Include="System.Memory" Version="4.5.1" />
     <PackageReference Include="System.Net.WebSockets.Client.Managed" Version="1.0.20" />
   </ItemGroup>
-
-
 </Project>
