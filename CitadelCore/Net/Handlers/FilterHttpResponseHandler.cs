@@ -103,7 +103,14 @@ namespace CitadelCore.Net.Handlers
         /// The handling task.
         /// </returns>
         public override async Task Handle(HttpContext context)
-        {   
+        {
+            Diagnostics.DiagnosticsWebSession diagSession = new Diagnostics.DiagnosticsWebSession();
+
+            if(Diagnostics.Collector.IsDiagnosticsEnabled)
+            {
+                diagSession.DateStarted = DateTime.Now;
+            }
+
             try
             {   
                 // Use helper to get the full, proper URL for the request.
@@ -139,6 +146,7 @@ namespace CitadelCore.Net.Handlers
                 }
 
                 HttpRequestMessage requestMsg;
+                diagSession.ClientRequestUri = fullUrl;
 
                 // Let's do our first call to message begin for the request side.                
                 var requestMessageNfo = new HttpMessageInfo
@@ -156,6 +164,11 @@ namespace CitadelCore.Net.Handlers
                 };
 
                 _newMessageCb?.Invoke(requestMessageNfo);
+
+                if (Diagnostics.Collector.IsDiagnosticsEnabled)
+                {
+                    diagSession.ClientRequestHeaders = context.Request.Headers.ToString();
+                }
 
                 if (requestMessageNfo.ProxyNextAction == ProxyNextAction.DropConnection)
                 {
@@ -189,6 +202,8 @@ namespace CitadelCore.Net.Handlers
                                     // If we don't have a body, there's no sense in calling the message end callback.
                                     if (requestBody.Length > 0)
                                     {
+
+                                        diagSession.ClientRequestBody = requestBody;
 
                                         // We'll now call the message end function for the request side.
                                         requestMessageNfo = new HttpMessageInfo
@@ -300,6 +315,11 @@ namespace CitadelCore.Net.Handlers
                 }
 #endif
 
+                if(Diagnostics.Collector.IsDiagnosticsEnabled)
+                {
+                    diagSession.ServerRequestHeaders = requestMsg.Headers.ToString();
+                }
+
                 // Lets start sending the request upstream. We're going to ask the client to return
                 // control to us when the headers are complete. This way we're not buffering entire
                 // responses into memory, and if the user doesn't request to inspect the content, we
@@ -310,6 +330,8 @@ namespace CitadelCore.Net.Handlers
                 try
                 {
                     response = await s_client.SendAsync(requestMsg, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
+
+                    diagSession.StatusCode = (int)(response?.StatusCode ?? 0);
                 }
                 catch (HttpRequestException e)
                 {
@@ -338,6 +360,15 @@ namespace CitadelCore.Net.Handlers
                         await context.Response.ApplyMessageInfo(requestMessageNfo, context.RequestAborted);
 
                         return;
+                    }
+                    else if(e.InnerException is WebException)
+                    {
+                        var webException = e.InnerException as WebException;
+
+                        if(webException.Response != null)
+                        {
+                            diagSession.StatusCode = (int?)(webException.Response as HttpWebResponse)?.StatusCode ?? 0;
+                        }
                     }
                 }
                 catch (Exception e)
@@ -375,6 +406,11 @@ namespace CitadelCore.Net.Handlers
                             }
                         }
                     }
+                }
+
+                if (Diagnostics.Collector.IsDiagnosticsEnabled)
+                {
+                    diagSession.ServerResponseHeaders = responseHeaders.ToString();
                 }
 
                 // Match the HTTP version of the client on the upstream request. We don't want to
@@ -432,6 +468,7 @@ namespace CitadelCore.Net.Handlers
                                         await Microsoft.AspNetCore.Http.Extensions.StreamCopyOperation.CopyToAsync(upstreamResponseStream, ms, s_maxInMemoryData, context.RequestAborted);
 
                                         var responseBody = ms.ToArray();
+                                        diagSession.ServerResponseBody = responseBody;
 
                                         responseMessageNfo = new HttpMessageInfo
                                         {
@@ -571,6 +608,14 @@ namespace CitadelCore.Net.Handlers
                 {
                     // Ignore task cancelled exceptions.
                     LoggerProxy.Default.Error(e);
+                }
+            }
+            finally
+            {
+                if(Diagnostics.Collector.IsDiagnosticsEnabled)
+                {
+                    diagSession.DateEnded = DateTime.Now;
+                    Diagnostics.Collector.ReportSession(diagSession);
                 }
             }
         }

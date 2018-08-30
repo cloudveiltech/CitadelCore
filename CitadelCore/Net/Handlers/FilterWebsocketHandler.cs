@@ -17,6 +17,7 @@ using CitadelCore.Net.Http;
 using CitadelCore.Extensions;
 using System.Collections.Generic;
 using CitadelCore.IO;
+using CitadelCore.Diagnostics;
 
 namespace CitadelCore.Net.Handlers
 {
@@ -66,6 +67,8 @@ namespace CitadelCore.Net.Handlers
             ClientWebSocket wsServer = null;
             System.Net.WebSockets.WebSocket wsClient = null;
 
+            DiagnosticsWebSession diagSession = new DiagnosticsWebSession();
+
             try
             {
                 // First we need the URL for this connection, since it's been requested to be upgraded to
@@ -81,6 +84,8 @@ namespace CitadelCore.Net.Handlers
                 {
                     fullUrl = "wss://" + fullUrl.Substring(8);
                 }
+
+                diagSession.ClientRequestUri = fullUrl;
 
                 // Next we need to try and parse the URL as a URI, because the websocket client requires
                 // this for connecting upstream.
@@ -114,6 +119,17 @@ namespace CitadelCore.Net.Handlers
                     wsServer.Options.ClientCertificates = new System.Security.Cryptography.X509Certificates.X509CertificateCollection(new[] { context.Connection.ClientCertificate.ToV2Certificate() });
                 }
 
+                if(Collector.IsDiagnosticsEnabled)
+                {
+                    var diagHeaderBuilder = new StringBuilder();
+                    foreach(var hdr in context.Request.Headers)
+                    {
+                        diagHeaderBuilder.AppendFormat($"{hdr.Key}: {hdr.Value.ToString()}\r\n");
+                    }
+
+                    diagSession.ClientRequestHeaders = diagHeaderBuilder.ToString();
+                }
+
                 var reqHeaderBuilder = new StringBuilder();
                 foreach(var hdr in context.Request.Headers)
                 {
@@ -133,6 +149,8 @@ namespace CitadelCore.Net.Handlers
                 }
 
                 reqHeaderBuilder.Append("\r\n");
+
+                diagSession.ServerRequestHeaders = reqHeaderBuilder.ToString();
 
                 // Connect the server websocket to the upstream, remote webserver.
                 await wsServer.ConnectAsync(wsUri, context.RequestAborted);
@@ -255,6 +273,8 @@ namespace CitadelCore.Net.Handlers
             }
             finally
             {
+                Collector.ReportSession(diagSession);
+
                 if(wsClient != null)
                 {
                     wsClient.Dispose();
